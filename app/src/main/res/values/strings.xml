@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">YodaToSL</string>
+    <string name="enter_text_here_li">Enter Text Here</string>
+    <string name="pitch_li">Pitch</string>
+    <string name="speed_li">Speed</string>
+    <string name="say_it_li">Say it!</string>
+    <string name="stop_speaking_li">Stop speaking</string>
 </resources>
