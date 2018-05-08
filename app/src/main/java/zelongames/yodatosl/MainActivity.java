@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
         coder = new Geocoder(this);
         txtSLGuide = findViewById(R.id.txtSLGuide);
 
-        FetchData fetchData = new FetchData("Rimbo station", "Tekniska högskolan");
+        FetchData fetchData = new FetchData("Rimbo station", "Tekniska högskolan", true);
         fetchData.execute();
     }
 

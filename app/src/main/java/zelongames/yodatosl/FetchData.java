@@ -1,8 +1,6 @@
 package zelongames.yodatosl;
 
 import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
 import android.os.AsyncTask;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -18,10 +16,10 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 import zelongames.yodatosl.JSON_Trip.JSONDestination;
+import zelongames.yodatosl.JSON_Trip.JSONPassListHelper;
 import zelongames.yodatosl.JSON_Trip.JSONOrigin;
 
 /**
@@ -34,6 +32,7 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
     private String originID = null;
     private String destinationName = null;
     private String destID = null;
+    private boolean passList = false;
 
     private StringBuilder data = null;
 
@@ -41,9 +40,10 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
         return data.toString();
     }
 
-    public FetchData(String originName, String destinationName) {
+    public FetchData(String originName, String destinationName, boolean passlist) {
         this.originName = originName;
         this.destinationName = destinationName;
+        this.passList = passlist;
     }
 
     @Override
@@ -69,20 +69,32 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
         }
     }
 
-    private String getTripInfo(){
+    private String getTripInfo() {
         String tripGuide = "";
 
         // Only convert data to string once
         String data = getData();
 
-        JSONOrigin dummyOrigin = new JSONOrigin(data);
+        JSONObject root = getRoot(data);
+
+        JSONOrigin dummyOrigin = new JSONOrigin(root);
 
         for (int t = 0; t < dummyOrigin.getTripCount(); t++) {
             for (int s = 0; s < dummyOrigin.getStopCount(t); s++) {
-                JSONOrigin origin = new JSONOrigin(data, t, s);
-                JSONDestination destination = new JSONDestination(data, t, s);
+                JSONOrigin origin = new JSONOrigin(root, t, s);
+                JSONDestination destination = new JSONDestination(root, t, s);
 
                 tripGuide += origin.getTime() + " " + origin.getName() + " - " + destination.getTime() + " " + destination.getName() + "\n";
+
+                if (passList) {
+                    JSONPassListHelper passListHelper = new JSONPassListHelper(root, t, s);
+                    if (passListHelper.hasPassList()) {
+                        for (int i = 1; i < passListHelper.getIntermediateStopCount(); i++) {
+
+                            tripGuide += "---" + passListHelper.getTime(i) + " " + passListHelper.getName(i) + "\n";
+                        }
+                    }
+                }
             }
             tripGuide += "\n";
         }
@@ -90,7 +102,17 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
         return tripGuide;
     }
 
-    private void updateTripData(){
+    public JSONObject getRoot(String data) {
+        try {
+            return new JSONObject(data);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    private void updateTripData() {
         readData(getTripURL(originID, destID));
     }
 
@@ -184,7 +206,8 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
             return new URL("http://api.sl.se/api2/TravelplannerV3/trip.json?key=" + API_Keys.RESPLANERARE_KEY +
                     "&originID=" + originID +
                     "&destID=" + destID +
-                    "&searchForArrival=0");
+                    "&searchForArrival=0" +
+                    "&passlist=" + (passList == true ? 1 : 0));
         } catch (MalformedURLException e) {
             e.printStackTrace();
             return null;

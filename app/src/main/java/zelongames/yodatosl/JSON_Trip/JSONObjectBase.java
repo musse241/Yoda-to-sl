@@ -1,5 +1,8 @@
 package zelongames.yodatosl.JSON_Trip;
 
+import android.location.Location;
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,44 +14,37 @@ import org.json.JSONObject;
 public abstract class JSONObjectBase {
 
     private final String OBJECT_NAME;
-    private final String DATA;
 
     private JSONArray tripArray = null;
-    private JSONObject jsonObject = null;
+    protected JSONObject jsonObject = null;
+    protected JSONObject stop = null;
 
-    public JSONObjectBase(String data, String objectName) {
-        this.DATA = data;
+
+    public JSONObjectBase(JSONObject root, String objectName) {
         this.OBJECT_NAME = objectName;
 
         try {
-            tripArray = getRoot().getJSONArray("Trip");
+            tripArray = root.getJSONArray("Trip");
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    public JSONObjectBase(String data, String objectName, int tripNumber, int stopNumber) {
-        this(data, objectName);
+    public JSONObjectBase(JSONObject root, String objectName, int tripNumber, int stopNumber) {
+        this(root, objectName);
 
         setTrip(tripNumber, stopNumber);
+        Log.d("", "");
     }
 
     public void setTrip(int tripNumber, int stopNumber) {
         try {
-            jsonObject = ((JSONObject) getLegArray(tripNumber).get(stopNumber)).getJSONObject(OBJECT_NAME);
+            stop = ((JSONObject) getLegArray(tripNumber).get(stopNumber));
+            if (OBJECT_NAME != null)
+                jsonObject = stop.getJSONObject(OBJECT_NAME);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
-
-    public JSONObject getRoot() {
-        try {
-            return new JSONObject(DATA);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return null;
     }
 
     public JSONArray getLegArray(int index) {
