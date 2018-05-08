@@ -79,12 +79,19 @@ public abstract class JSONObjectBase {
             return null;
 
         try {
-            return jsonObject.get("time").toString();
+            return getSimplifiedTime(jsonObject.get("time").toString());
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         return null;
+    }
+
+    protected String getSimplifiedTime(String longTime){
+        String[] timeSplit = longTime.split(":");
+        String time = timeSplit[0] + ":" + timeSplit[1];
+
+        return time;
     }
 
     public int getTripCount() {

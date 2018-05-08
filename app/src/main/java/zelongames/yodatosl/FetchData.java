@@ -2,6 +2,8 @@ package zelongames.yodatosl;
 
 import android.location.Address;
 import android.os.AsyncTask;
+import android.speech.tts.TextToSpeech;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -17,6 +19,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.Locale;
 
 import zelongames.yodatosl.JSON_Trip.JSONDestination;
 import zelongames.yodatosl.JSON_Trip.JSONPassListHelper;
@@ -28,12 +31,24 @@ import zelongames.yodatosl.JSON_Trip.JSONOrigin;
 
 public class FetchData extends AsyncTask<Void, Void, Void> {
 
+    public enum TextFormat {
+        Info,
+        Speech,
+    }
+
     private final boolean PASS_LIST;
+    private final TextFormat TEXT_FORMAT;
 
     private String originName = null;
     private String originID = null;
     private String destinationName = null;
     private String destID = null;
+
+    private String tripInfo = "";
+
+    public String getTripInfo() {
+        return tripInfo;
+    }
 
     private StringBuilder data = null;
 
@@ -41,7 +56,14 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
         return data.toString();
     }
 
-    public FetchData(String originName, String destinationName, boolean passlist) {
+    private boolean finnished = false;
+
+    public boolean getFinnished(){
+        return finnished;
+    }
+
+    public FetchData(TextFormat textFormat, String originName, String destinationName, boolean passlist) {
+        this.TEXT_FORMAT = textFormat;
         this.originName = originName;
         this.destinationName = destinationName;
         this.PASS_LIST = passlist;
@@ -66,11 +88,14 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
 
         if (originName != null && destinationName != null) {
 
-            MainActivity.txtSLGuide.setText(getTripInfo());
+            tripInfo = getTripInfo(1);
+            MainActivity.txtSLGuide.setText(tripInfo);
         }
+
+        finnished = true;
     }
 
-    private String getTripInfo() {
+    private String getTripInfo(Integer tripNumber) {
         String tripGuide = "";
 
         // Only convert data to string once
@@ -80,19 +105,47 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
 
         JSONOrigin dummyOrigin = new JSONOrigin(root);
 
-        for (int t = 0; t < dummyOrigin.getTripCount(); t++) {
-            for (int s = 0; s < dummyOrigin.getStopCount(t); s++) {
+        int tripCount = tripNumber == null ? dummyOrigin.getTripCount() : tripNumber;
+        int startIndex = tripNumber == null ? tripCount : tripCount - 1;
+
+        for (int t = startIndex; t < tripCount; t++) {
+            int stopCount = dummyOrigin.getStopCount(t);
+            for (int s = 0; s < stopCount; s++) {
                 JSONOrigin origin = new JSONOrigin(root, t, s);
                 JSONDestination destination = new JSONDestination(root, t, s);
 
-                tripGuide += origin.getTime() + " " + origin.getName() + " - " + destination.getTime() + " " + destination.getName() + "\n";
+                switch (TEXT_FORMAT) {
+                    case Info:
+                        tripGuide += origin.getTime() + " " + origin.getName() + " - " + destination.getTime() + " " + destination.getName() + "\n";
+                        break;
+                    case Speech:
+                        if (s == 0) {
+                            tripGuide += "I will tell you how to go from " + origin.getName() + " to " + destination.getName() + ". ";
+                            tripGuide += "Go to " + origin.getName() + ", " + origin.getTime() + " o'clock. ";
+                        } else{
+                            tripGuide += " Then get off the buss at " + origin.getName() + " and enter the buss at " + origin.getTime() + " o'clock. ";
+                        }
+                        break;
+                }
 
                 if (PASS_LIST) {
                     JSONPassListHelper passListHelper = new JSONPassListHelper(root, t, s);
                     if (passListHelper.hasPassList()) {
-                        for (int i = 1; i < passListHelper.getIntermediateStopCount(); i++) {
-
-                            tripGuide += "---" + passListHelper.getTime(i) + " " + passListHelper.getName(i) + "\n";
+                        int intermediateStops = passListHelper.getIntermediateStopCount();
+                        for (int i = 1; i < intermediateStops; i++) {
+                            switch (TEXT_FORMAT) {
+                                case Info:
+                                    tripGuide += "---" + passListHelper.getTime(i) + " " + passListHelper.getName(i) + "\n";
+                                    break;
+                                case Speech:
+                                    if (i == 1)
+                                        tripGuide += "Then you have to go to " + passListHelper.getName(i) + " at " + passListHelper.getTime(i) + " o'clock. ";
+                                    else if (t == tripCount - 1 && s == stopCount - 1 && i == intermediateStops - 1)
+                                        tripGuide += "And finally you will enter " + passListHelper.getName(i) + ", at " + passListHelper.getTime(i) + " o'clock. ";
+                                    else
+                                        tripGuide += "And then you will enter " + passListHelper.getName(i) + ", " + passListHelper.getTime(i) + " o'clock. ";
+                                    break;
+                            }
                         }
                     }
                 }

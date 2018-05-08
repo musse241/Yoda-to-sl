@@ -36,12 +36,12 @@ public class JSONPassListHelper extends JSONObjectBase {
 
     @Override
     public String getName() {
-        return getName(0);
+        return getSimplifiedTime(getName(0));
     }
 
     public String getTime(int stopNumber){
         try {
-            return getStop(stopNumber).get("arrTime").toString();
+            return getSimplifiedTime(getStop(stopNumber).get("arrTime").toString());
         } catch (JSONException e) {
             e.printStackTrace();
             return null;
