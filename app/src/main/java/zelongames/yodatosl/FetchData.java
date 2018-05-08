@@ -28,11 +28,12 @@ import zelongames.yodatosl.JSON_Trip.JSONOrigin;
 
 public class FetchData extends AsyncTask<Void, Void, Void> {
 
+    private final boolean PASS_LIST;
+
     private String originName = null;
     private String originID = null;
     private String destinationName = null;
     private String destID = null;
-    private boolean passList = false;
 
     private StringBuilder data = null;
 
@@ -43,7 +44,7 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
     public FetchData(String originName, String destinationName, boolean passlist) {
         this.originName = originName;
         this.destinationName = destinationName;
-        this.passList = passlist;
+        this.PASS_LIST = passlist;
     }
 
     @Override
@@ -86,7 +87,7 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
 
                 tripGuide += origin.getTime() + " " + origin.getName() + " - " + destination.getTime() + " " + destination.getName() + "\n";
 
-                if (passList) {
+                if (PASS_LIST) {
                     JSONPassListHelper passListHelper = new JSONPassListHelper(root, t, s);
                     if (passListHelper.hasPassList()) {
                         for (int i = 1; i < passListHelper.getIntermediateStopCount(); i++) {
@@ -207,7 +208,7 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
                     "&originID=" + originID +
                     "&destID=" + destID +
                     "&searchForArrival=0" +
-                    "&passlist=" + (passList == true ? 1 : 0));
+                    "&passlist=" + (PASS_LIST == true ? 1 : 0));
         } catch (MalformedURLException e) {
             e.printStackTrace();
             return null;
