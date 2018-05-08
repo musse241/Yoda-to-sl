@@ -5,4 +5,7 @@
     <string name="speed_li">Speed</string>
     <string name="say_it_li">Say it!</string>
     <string name="stop_speaking_li">Stop speaking</string>
+    <string name="click_me">Click me</string>
+    <string name="fetched_text_here_li">Fetched text here</string>
+    <string name="to_test_json_li">To Test Json</string>
 </resources>

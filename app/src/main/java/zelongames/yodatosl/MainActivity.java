@@ -1,5 +1,6 @@
 package zelongames.yodatosl;
 
+import android.content.Intent;
 import android.os.Build;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
@@ -21,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private SeekBar li_seekBar_speed;
     private Button li_btn_speak;
     private Button li_btn_stop_speak;
+    private Button li_btn_to_test_json;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +31,7 @@ public class MainActivity extends AppCompatActivity {
 
         li_btn_speak = findViewById(R.id.btn_speak_li);
         li_btn_stop_speak = findViewById(R.id.btn_stop_speak_li);
+        li_btn_to_test_json = findViewById(R.id.btn_to_json);
 
         li_TTS = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
             @Override
@@ -52,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
         li_seekBar_pitch = findViewById(R.id.seek_bar_pitch_li);
         li_seekBar_speed = findViewById(R.id.seek_bar_speed_li);
 
+
         li_btn_speak.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -66,6 +70,15 @@ public class MainActivity extends AppCompatActivity {
                     li_TTS.stop();
             }
         });
+
+        li_btn_to_test_json.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent toJson = new Intent(MainActivity.this,JsonTest.class);
+                startActivity(toJson);
+            }
+        });
+
     }
 
     //To read the text out

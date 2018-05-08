@@ -56,5 +56,11 @@
             android:id="@+id/btn_stop_speak_li"
             android:layout_gravity="center"/>
     </LinearLayout>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/to_test_json_li"
+        android:id="@+id/btn_to_json"
+        android:layout_gravity="center"/>
 
 </LinearLayout>
