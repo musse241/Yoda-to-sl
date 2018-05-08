@@ -89,7 +89,10 @@ public abstract class JSONObjectBase {
 
     protected String getSimplifiedTime(String longTime){
         String[] timeSplit = longTime.split(":");
-        String time = timeSplit[0] + ":" + timeSplit[1];
+        String minutes = timeSplit[1];
+
+
+        String time = minutes.equals("00") ? timeSplit[0] : timeSplit[0] + ":" + minutes;
 
         return time;
     }

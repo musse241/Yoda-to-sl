@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
                 if (!tripInfo.isEmpty()) {
                     textToSpeech.setPitch(1f);
                     textToSpeech.setSpeechRate(1f);
-                    textToSpeech.speak(fetchData.getTripInfo(), TextToSpeech.QUEUE_FLUSH, null, null);
+                    textToSpeech.speak(tripInfo, TextToSpeech.QUEUE_FLUSH, null, null);
                 }
             }
         });
