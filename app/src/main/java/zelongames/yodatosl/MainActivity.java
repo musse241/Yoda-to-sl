@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onInit(int status) {
                if(status == TextToSpeech.SUCCESS) {
-                   int result = li_TTS.setLanguage(Locale.ENGLISH);
+                   int result = li_TTS.setLanguage(Locale.UK);
                    if(result == TextToSpeech.LANG_MISSING_DATA
                            || result == TextToSpeech.LANG_NOT_SUPPORTED){
                        Log.e("TTS","Language is not supported");
