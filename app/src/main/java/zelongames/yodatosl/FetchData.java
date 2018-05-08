@@ -18,6 +18,13 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -37,6 +44,7 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
     }
 
     private final boolean PASS_LIST;
+    private final boolean USE_DATE_TIME;
     private final TextFormat TEXT_FORMAT;
 
     private String originName = null;
@@ -56,17 +64,12 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
         return data.toString();
     }
 
-    private boolean finnished = false;
-
-    public boolean getFinnished(){
-        return finnished;
-    }
-
-    public FetchData(TextFormat textFormat, String originName, String destinationName, boolean passlist) {
+    public FetchData(TextFormat textFormat, String originName, String destinationName, boolean passlist, boolean useDateTime) {
         this.TEXT_FORMAT = textFormat;
         this.originName = originName;
         this.destinationName = destinationName;
         this.PASS_LIST = passlist;
+        this.USE_DATE_TIME = useDateTime;
     }
 
     @Override
@@ -91,8 +94,6 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
             tripInfo = getTripInfo(1);
             MainActivity.txtSLGuide.setText(tripInfo);
         }
-
-        finnished = true;
     }
 
     private String getTripInfo(Integer tripNumber) {
@@ -105,10 +106,9 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
 
         JSONOrigin dummyOrigin = new JSONOrigin(root);
 
-        int tripCount = tripNumber == null ? dummyOrigin.getTripCount() : tripNumber;
-        int startIndex = tripNumber == null ? tripCount : tripCount - 1;
+        int tripCount = dummyOrigin.getTripCount();
 
-        for (int t = startIndex; t < tripCount; t++) {
+        for (int t = 0; t < tripCount; t++) {
             int stopCount = dummyOrigin.getStopCount(t);
             for (int s = 0; s < stopCount; s++) {
                 JSONOrigin origin = new JSONOrigin(root, t, s);
@@ -122,7 +122,7 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
                         if (s == 0) {
                             tripGuide += "I will tell you how to go from " + origin.getName() + " to " + destination.getName() + ". ";
                             tripGuide += "Go to " + origin.getName() + ", " + origin.getTime() + " o'clock. ";
-                        } else{
+                        } else {
                             tripGuide += " Then get off the buss at " + origin.getName() + " and enter the buss at " + origin.getTime() + " o'clock. ";
                         }
                         break;
@@ -138,9 +138,11 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
                                     tripGuide += "---" + passListHelper.getTime(i) + " " + passListHelper.getName(i) + "\n";
                                     break;
                                 case Speech:
+                                    boolean onLastStop = s == stopCount - 1 && i == intermediateStops - 1;
+
                                     if (i == 1)
                                         tripGuide += "Then you have to go to " + passListHelper.getName(i) + " at " + passListHelper.getTime(i) + " o'clock. ";
-                                    else if (t == tripCount - 1 && s == stopCount - 1 && i == intermediateStops - 1)
+                                    else if (onLastStop)
                                         tripGuide += "And finally you will enter " + passListHelper.getName(i) + ", at " + passListHelper.getTime(i) + " o'clock. ";
                                     else
                                         tripGuide += "And then you will enter " + passListHelper.getName(i) + ", " + passListHelper.getTime(i) + " o'clock. ";
@@ -150,6 +152,10 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
                     }
                 }
             }
+            // Only get the first trip of the list
+            if (USE_DATE_TIME)
+                break;
+
             tripGuide += "\n";
         }
 
@@ -226,6 +232,14 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
         return id;
     }
 
+    private String getDateTime() {
+        return new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
+    }
+
+    private String getTime() {
+        return new SimpleDateFormat("HH:mm").format(Calendar.getInstance().getTime());
+    }
+
     private LatLng getLocationFromAddress(String locationName) {
 
         try {
@@ -257,11 +271,20 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
 
     private URL getTripURL(String originID, String destID) {
         try {
-            return new URL("http://api.sl.se/api2/TravelplannerV3/trip.json?key=" + API_Keys.RESPLANERARE_KEY +
-                    "&originID=" + originID +
-                    "&destID=" + destID +
-                    "&searchForArrival=0" +
-                    "&passlist=" + (PASS_LIST == true ? 1 : 0));
+            if (USE_DATE_TIME)
+                return new URL("http://api.sl.se/api2/TravelplannerV3/trip.json?key=" + API_Keys.RESPLANERARE_KEY +
+                        "&originID=" + originID +
+                        "&destID=" + destID +
+                        "&searchForArrival=0" +
+                        "&passlist=" + (PASS_LIST == true ? 1 : 0) +
+                        "&date=" + getDateTime() +
+                        "&time=" + getTime());
+            else
+                return new URL("http://api.sl.se/api2/TravelplannerV3/trip.json?key=" + API_Keys.RESPLANERARE_KEY +
+                        "&originID=" + originID +
+                        "&destID=" + destID +
+                        "&searchForArrival=0" +
+                        "&passlist=" + (PASS_LIST == true ? 1 : 0));
         } catch (MalformedURLException e) {
             e.printStackTrace();
             return null;

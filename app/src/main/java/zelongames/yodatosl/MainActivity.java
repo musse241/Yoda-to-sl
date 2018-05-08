@@ -29,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+
         btnListenStart = findViewById(R.id.btnListenStart);
         btnListenStop = findViewById(R.id.btnListenStop);
 
@@ -37,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
         initializeTextToSpeech();
 
-        final FetchData fetchData = new FetchData(FetchData.TextFormat.Speech, "Rimbo station", "Tekniska högskolan", true);
+        final FetchData fetchData = new FetchData(FetchData.TextFormat.Speech, "Rimbo station", "Tekniska högskolan", true, true);
         fetchData.execute();
 
         btnListenStart.setOnClickListener(new View.OnClickListener() {
