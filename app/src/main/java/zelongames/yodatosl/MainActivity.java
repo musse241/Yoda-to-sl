@@ -16,6 +16,7 @@ public class MainActivity extends AppCompatActivity {
     public static TextView txtSLGuide = null;
     public static Geocoder coder = null;
 
+    private FetchData fetchData = null;
     private Button btnListenStart = null;
     private Button btnListenStop = null;
     private TextToSpeech textToSpeech = null;
@@ -29,18 +30,20 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
-
-        btnListenStart = findViewById(R.id.btnListenStart);
-        btnListenStop = findViewById(R.id.btnListenStop);
-
         coder = new Geocoder(this);
         txtSLGuide = findViewById(R.id.txtSLGuide);
 
         initializeTextToSpeech();
 
-        final FetchData fetchData = new FetchData(FetchData.TextFormat.Speech, "Rimbo station", "Tekniska högskolan", true, true);
+        fetchData = new FetchData(FetchData.TextFormat.Speech, "Rimbo station", "Tekniska högskolan", true, true);
         fetchData.execute();
+
+        initializeSpeechButtons();
+    }
+
+    private void initializeSpeechButtons() {
+        btnListenStart = findViewById(R.id.btnListenStart);
+        btnListenStop = findViewById(R.id.btnListenStop);
 
         btnListenStart.setOnClickListener(new View.OnClickListener() {
             @Override
