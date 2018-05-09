@@ -1,5 +1,6 @@
 package zelongames.yodatosl.JSON_Trip;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -8,12 +9,12 @@ import org.json.JSONObject;
 
 public class JSONDestination extends JSONObjectBase {
 
-    public JSONDestination(JSONObject root) {
-        super(root, "Destination");
+    public JSONDestination(JSONArray tripArray) {
+        super(tripArray, "Destination");
     }
 
-    public JSONDestination(JSONObject root, int tripNumber, int stopNumber) {
-        super(root, "Destination", tripNumber, stopNumber);
+    public JSONDestination(JSONObject stop) {
+        super(stop, "Destination");
 
 
     }

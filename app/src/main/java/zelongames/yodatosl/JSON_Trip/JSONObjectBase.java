@@ -1,6 +1,5 @@
 package zelongames.yodatosl.JSON_Trip;
 
-import android.location.Location;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -13,51 +12,37 @@ import org.json.JSONObject;
 
 public abstract class JSONObjectBase {
 
+    protected final JSONObject STOP;
+    private final JSONArray TRIP_ARRAY;
     private final String OBJECT_NAME;
 
-    private JSONArray tripArray = null;
     protected JSONObject jsonObject = null;
-    protected JSONObject stop = null;
 
 
-    public JSONObjectBase(JSONObject root, String objectName) {
+    public JSONObjectBase(JSONArray tripArray, String objectName) {
         this.OBJECT_NAME = objectName;
-
-        try {
-            tripArray = root.getJSONArray("Trip");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        this.TRIP_ARRAY = tripArray;
+        this.STOP = null;
     }
 
-    public JSONObjectBase(JSONObject root, String objectName, int tripNumber, int stopNumber) {
-        this(root, objectName);
+    public JSONObjectBase(JSONObject stop, String objectName) {
+        this.OBJECT_NAME = objectName;
+        this.TRIP_ARRAY = null;
+        this.STOP = stop;
 
-        setTrip(tripNumber, stopNumber);
+        setTrip();
         Log.d("", "");
     }
 
-    public void setTrip(int tripNumber, int stopNumber) {
+    public void setTrip() {
         try {
-            stop = ((JSONObject) getLegArray(tripNumber).get(stopNumber));
             if (OBJECT_NAME != null)
-                jsonObject = stop.getJSONObject(OBJECT_NAME);
+                jsonObject = STOP.getJSONObject(OBJECT_NAME);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
 
-    public JSONArray getLegArray(int index) {
-        try {
-            if (index > tripArray.length() - 1)
-                index = tripArray.length() - 1;
-            return ((JSONObject) tripArray.get(index)).getJSONObject("LegList").getJSONArray("Leg");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
 
     // Get Trip Information
 
@@ -89,19 +74,15 @@ public abstract class JSONObjectBase {
 
     protected String getSimplifiedTime(String longTime){
         String[] timeSplit = longTime.split(":");
+        String hours = timeSplit[0];
         String minutes = timeSplit[1];
 
-
-        String time = minutes.equals("00") ? timeSplit[0] : timeSplit[0] + ":" + minutes;
+        String time = minutes.equals("00") ? hours : hours + ":" + minutes;
 
         return time;
     }
 
     public int getTripCount() {
-        return tripArray.length();
-    }
-
-    public int getStopCount(int tripNumber) {
-        return getLegArray(tripNumber).length();
+        return TRIP_ARRAY.length();
     }
 }

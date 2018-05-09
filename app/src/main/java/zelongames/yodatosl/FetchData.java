@@ -2,8 +2,6 @@ package zelongames.yodatosl;
 
 import android.location.Address;
 import android.os.AsyncTask;
-import android.speech.tts.TextToSpeech;
-import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -18,19 +16,14 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import zelongames.yodatosl.JSON_Trip.JSONDestination;
-import zelongames.yodatosl.JSON_Trip.JSONPassListHelper;
+import zelongames.yodatosl.JSON_Trip.JSONPassListManager;
 import zelongames.yodatosl.JSON_Trip.JSONOrigin;
+import zelongames.yodatosl.JSON_Trip.JSONTripHelper;
 
 /**
  * Created by Jonas on 2018-05-03.
@@ -102,17 +95,22 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
         // Only convert data to string once
         String data = getData();
 
-        JSONObject root = getRoot(data);
+        JSONObject root = JSONTripHelper.getRoot(data);
+        JSONArray tripArray = JSONTripHelper.getTripArray(root);
 
-        JSONOrigin dummyOrigin = new JSONOrigin(root);
+        JSONOrigin dummyOrigin = new JSONOrigin(tripArray);
 
         int tripCount = dummyOrigin.getTripCount();
 
         for (int t = 0; t < tripCount; t++) {
-            int stopCount = dummyOrigin.getStopCount(t);
+            JSONArray legArray = JSONTripHelper.getLegArray(tripArray, t);
+
+            int stopCount = legArray.length();
             for (int s = 0; s < stopCount; s++) {
-                JSONOrigin origin = new JSONOrigin(root, t, s);
-                JSONDestination destination = new JSONDestination(root, t, s);
+                JSONObject stop = JSONTripHelper.getStop(legArray, s);
+
+                JSONOrigin origin = new JSONOrigin(stop);
+                JSONDestination destination = new JSONDestination(stop);
 
                 switch (TEXT_FORMAT) {
                     case Info:
@@ -129,23 +127,20 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
                 }
 
                 if (PASS_LIST) {
-                    JSONPassListHelper passListHelper = new JSONPassListHelper(root, t, s);
-                    if (passListHelper.hasPassList()) {
-                        int intermediateStops = passListHelper.getIntermediateStopCount();
+                    JSONPassListManager passListManager = new JSONPassListManager(stop);
+                    if (passListManager.hasPassList()) {
+                        int intermediateStops = passListManager.getIntermediateStopCount();
                         for (int i = 1; i < intermediateStops; i++) {
                             switch (TEXT_FORMAT) {
                                 case Info:
-                                    tripGuide += "---" + passListHelper.getTime(i) + " " + passListHelper.getName(i) + "\n";
+                                    tripGuide += "- " + passListManager.getTime(i) + " " + passListManager.getName(i) + "\n";
                                     break;
                                 case Speech:
                                     boolean onLastStop = s == stopCount - 1 && i == intermediateStops - 1;
-
-                                    if (i == 1)
-                                        tripGuide += "Then you have to go to " + passListHelper.getName(i) + " at " + passListHelper.getTime(i) + " o'clock. ";
-                                    else if (onLastStop)
-                                        tripGuide += "And finally you will enter " + passListHelper.getName(i) + ", at " + passListHelper.getTime(i) + " o'clock. ";
+                                    if (onLastStop)
+                                        tripGuide += "And finally you will enter " + passListManager.getName(i) + ", at " + passListManager.getTime(i) + " o'clock. ";
                                     else
-                                        tripGuide += "And then you will enter " + passListHelper.getName(i) + ", " + passListHelper.getTime(i) + " o'clock. ";
+                                        tripGuide += "And then you will enter " + passListManager.getName(i) + ". ";
                                     break;
                             }
                         }
@@ -160,16 +155,6 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
         }
 
         return tripGuide;
-    }
-
-    public JSONObject getRoot(String data) {
-        try {
-            return new JSONObject(data);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return null;
     }
 
     private void updateTripData() {
