@@ -20,7 +20,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnListenStart = null;
     private Button btnListenStop = null;
     private TextToSpeech textToSpeech = null;
-
+    String tripInfo;
     public static TextToSpeech getTextToSpeech() {
         return getTextToSpeech();
     }
@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         btnListenStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String tripInfo = fetchData.getTripInfo();
+                 tripInfo = fetchData.getTripInfo();
 
                 if (!tripInfo.isEmpty()) {
                     textToSpeech.setPitch(1f);
@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onInit(int status) {
                 if (status == TextToSpeech.SUCCESS) {
-                    int result = textToSpeech.setLanguage(Locale.ENGLISH);
+                    int result = textToSpeech.setLanguage(Locale.CHINA);
                     if (result == TextToSpeech.LANG_MISSING_DATA
                             || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                         Log.e("TTS", "Language is not supported");
@@ -82,6 +82,21 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("TTS", "Initialization failed");
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        textToSpeech.speak(tripInfo, TextToSpeech.QUEUE_FLUSH, null, null);
+    }
+
+    @Override
+    protected void onPause() {
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+
+        }
+        super.onPause();
     }
 
     @Override
