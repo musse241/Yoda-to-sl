@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnListenStop = null;
     private TextToSpeech textToSpeech = null;
     String tripInfo;
+
     public static TextToSpeech getTextToSpeech() {
         return getTextToSpeech();
     }
@@ -48,21 +49,17 @@ public class MainActivity extends AppCompatActivity {
         btnListenStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                 tripInfo = fetchData.getTripInfo();
+                tripInfo = fetchData.getTripInfo();
 
-                if (!tripInfo.isEmpty()) {
-                    textToSpeech.setPitch(1f);
-                    textToSpeech.setSpeechRate(1f);
-                    textToSpeech.speak(tripInfo, TextToSpeech.QUEUE_FLUSH, null, null);
-                }
+                if (!tripInfo.isEmpty())
+                    TextToSpeechHelper.speak(textToSpeech, tripInfo);
             }
         });
 
         btnListenStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (textToSpeech != null)
-                    textToSpeech.stop();
+                TextToSpeechHelper.stopSpeech(textToSpeech);
             }
         });
     }
@@ -72,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onInit(int status) {
                 if (status == TextToSpeech.SUCCESS) {
-                    int result = textToSpeech.setLanguage(Locale.CHINA);
+                    int result = textToSpeech.setLanguage(Locale.ENGLISH);
                     if (result == TextToSpeech.LANG_MISSING_DATA
                             || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                         Log.e("TTS", "Language is not supported");
@@ -87,24 +84,19 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        textToSpeech.speak(tripInfo, TextToSpeech.QUEUE_FLUSH, null, null);
+        if (TextToSpeechHelper.getShouldSpeakOnResume())
+            TextToSpeechHelper.speak(textToSpeech, tripInfo);
     }
 
     @Override
     protected void onPause() {
-        if (textToSpeech != null) {
-            textToSpeech.stop();
-
-        }
+        TextToSpeechHelper.pauseSpeech(textToSpeech);
         super.onPause();
     }
 
     @Override
     protected void onDestroy() {
-        if (textToSpeech != null) {
-            textToSpeech.stop();
-            textToSpeech.shutdown();
-        }
+        TextToSpeechHelper.stopSpeech(textToSpeech);
 
         super.onDestroy();
     }

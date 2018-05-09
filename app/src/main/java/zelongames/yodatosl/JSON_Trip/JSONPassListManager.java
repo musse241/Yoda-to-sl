@@ -1,5 +1,7 @@
 package zelongames.yodatosl.JSON_Trip;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,14 +10,14 @@ import org.json.JSONObject;
  * Created by Jonas on 2018-05-08.
  */
 
-public class JSONPassListHelper extends JSONObjectBase {
+public class JSONPassListManager extends JSONObjectBase {
     private JSONArray passList = null;
 
-    public JSONPassListHelper(JSONObject root, int tripNumber, int stopNumber) {
-        super(root, null, tripNumber, stopNumber);
+    public JSONPassListManager(JSONObject stop) {
+        super(stop, null);
 
         try {
-            passList = stop.getJSONObject("Stops").getJSONArray("Stop");
+            passList = STOP.getJSONObject("Stops").getJSONArray("Stop");
         } catch (JSONException e) {
             e.printStackTrace();
         }

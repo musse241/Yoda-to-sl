@@ -10,10 +10,10 @@ import org.json.JSONObject;
 
 public class JSONOrigin extends JSONObjectBase {
 
-    public JSONOrigin(JSONObject root) {
-        super(root, "Origin");
+    public JSONOrigin(JSONArray tripArray) {
+        super(tripArray, "Origin");
     }
-    public JSONOrigin(JSONObject root, int tripNumber, int stopNumber) {
-        super(root, "Origin", tripNumber, stopNumber);
+    public JSONOrigin(JSONObject stop) {
+        super(stop, "Origin");
     }
 }
