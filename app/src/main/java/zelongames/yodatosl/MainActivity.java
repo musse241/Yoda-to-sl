@@ -1,87 +1,93 @@
 package zelongames.yodatosl;
 
-import android.location.Address;
 import android.location.Geocoder;
+import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
-import com.google.android.gms.maps.model.LatLng;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
     public static TextView txtSLGuide = null;
     public static Geocoder coder = null;
 
+    private Button btnListenStart = null;
+    private Button btnListenStop = null;
+    private TextToSpeech textToSpeech = null;
+
+    public static TextToSpeech getTextToSpeech() {
+        return getTextToSpeech();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
+
+        btnListenStart = findViewById(R.id.btnListenStart);
+        btnListenStop = findViewById(R.id.btnListenStop);
+
         coder = new Geocoder(this);
         txtSLGuide = findViewById(R.id.txtSLGuide);
 
-        FetchData fetchData = new FetchData("Rimbo station", "Tekniska högskolan");
+        initializeTextToSpeech();
+
+        final FetchData fetchData = new FetchData(FetchData.TextFormat.Speech, "Rimbo station", "Tekniska högskolan", true, true);
         fetchData.execute();
-    }
 
+        btnListenStart.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String tripInfo = fetchData.getTripInfo();
 
-    public String getClosestStopID(String data) {
-        String id = "";
-
-        try {
-            JSONObject root = new JSONObject(data);
-            id = root.getJSONObject("LocationList").getJSONArray("StopLocation").getJSONObject(0).get("id").toString();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-
-        return id;
-    }
-
-    public LatLng getLocationFromAddress(String locationName) {
-        Geocoder coder = new Geocoder(this);
-
-        try {
-            List<Address> address = coder.getFromLocationName(locationName, 1);
-
-            if (address == null || address.size() == 0)
-                return null;
-
-            Address location = address.get(0);
-            return new LatLng(location.getLatitude(), location.getLongitude());
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    private String getCompleteAddressString(double latitude, double longitude) {
-        String strAdd = "";
-        Geocoder geocoder = new Geocoder(this);
-        try {
-            List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
-            if (addresses != null) {
-                Address returnedAddress = addresses.get(0);
-                StringBuilder strReturnedAddress = new StringBuilder("");
-
-                for (int i = 0; i <= returnedAddress.getMaxAddressLineIndex(); i++) {
-                    strReturnedAddress.append(returnedAddress.getAddressLine(i)).append("\n");
+                if (!tripInfo.isEmpty()) {
+                    textToSpeech.setPitch(1f);
+                    textToSpeech.setSpeechRate(1f);
+                    textToSpeech.speak(tripInfo, TextToSpeech.QUEUE_FLUSH, null, null);
                 }
-                strAdd = strReturnedAddress.toString();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        });
+
+        btnListenStop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (textToSpeech != null)
+                    textToSpeech.stop();
+            }
+        });
+    }
+
+    private void initializeTextToSpeech() {
+        textToSpeech = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status == TextToSpeech.SUCCESS) {
+                    int result = textToSpeech.setLanguage(Locale.ENGLISH);
+                    if (result == TextToSpeech.LANG_MISSING_DATA
+                            || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                        Log.e("TTS", "Language is not supported");
+                    } else
+                        btnListenStart.setEnabled(true);
+                } else
+                    Log.e("TTS", "Initialization failed");
+            }
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
         }
-        return strAdd;
+
+        super.onDestroy();
     }
 }

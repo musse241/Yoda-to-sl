@@ -1,15 +1,19 @@
 package zelongames.yodatosl.JSON_Trip;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Created by Jonas on 2018-05-03.
  */
 
 public class JSONOrigin extends JSONObjectBase {
 
-    public JSONOrigin(String data) {
-        super(data, "Origin");
+    public JSONOrigin(JSONObject root) {
+        super(root, "Origin");
     }
-    public JSONOrigin(String data, int tripNumber, int stopNumber) {
-        super(data, "Origin", tripNumber, stopNumber);
+    public JSONOrigin(JSONObject root, int tripNumber, int stopNumber) {
+        super(root, "Origin", tripNumber, stopNumber);
     }
 }

@@ -1,9 +1,9 @@
 package zelongames.yodatosl;
 
 import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
 import android.os.AsyncTask;
+import android.speech.tts.TextToSpeech;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -18,10 +18,18 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import zelongames.yodatosl.JSON_Trip.JSONDestination;
+import zelongames.yodatosl.JSON_Trip.JSONPassListHelper;
 import zelongames.yodatosl.JSON_Trip.JSONOrigin;
 
 /**
@@ -30,10 +38,25 @@ import zelongames.yodatosl.JSON_Trip.JSONOrigin;
 
 public class FetchData extends AsyncTask<Void, Void, Void> {
 
+    public enum TextFormat {
+        Info,
+        Speech,
+    }
+
+    private final boolean PASS_LIST;
+    private final boolean USE_DATE_TIME;
+    private final TextFormat TEXT_FORMAT;
+
     private String originName = null;
     private String originID = null;
     private String destinationName = null;
     private String destID = null;
+
+    private String tripInfo = "";
+
+    public String getTripInfo() {
+        return tripInfo;
+    }
 
     private StringBuilder data = null;
 
@@ -41,9 +64,12 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
         return data.toString();
     }
 
-    public FetchData(String originName, String destinationName) {
+    public FetchData(TextFormat textFormat, String originName, String destinationName, boolean passlist, boolean useDateTime) {
+        this.TEXT_FORMAT = textFormat;
         this.originName = originName;
         this.destinationName = destinationName;
+        this.PASS_LIST = passlist;
+        this.USE_DATE_TIME = useDateTime;
     }
 
     @Override
@@ -65,32 +91,88 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
 
         if (originName != null && destinationName != null) {
 
-            MainActivity.txtSLGuide.setText(getTripInfo());
+            tripInfo = getTripInfo(1);
+            MainActivity.txtSLGuide.setText(tripInfo);
         }
     }
 
-    private String getTripInfo(){
+    private String getTripInfo(Integer tripNumber) {
         String tripGuide = "";
 
         // Only convert data to string once
         String data = getData();
 
-        JSONOrigin dummyOrigin = new JSONOrigin(data);
+        JSONObject root = getRoot(data);
 
-        for (int t = 0; t < dummyOrigin.getTripCount(); t++) {
-            for (int s = 0; s < dummyOrigin.getStopCount(t); s++) {
-                JSONOrigin origin = new JSONOrigin(data, t, s);
-                JSONDestination destination = new JSONDestination(data, t, s);
+        JSONOrigin dummyOrigin = new JSONOrigin(root);
 
-                tripGuide += origin.getTime() + " " + origin.getName() + " - " + destination.getTime() + " " + destination.getName() + "\n";
+        int tripCount = dummyOrigin.getTripCount();
+
+        for (int t = 0; t < tripCount; t++) {
+            int stopCount = dummyOrigin.getStopCount(t);
+            for (int s = 0; s < stopCount; s++) {
+                JSONOrigin origin = new JSONOrigin(root, t, s);
+                JSONDestination destination = new JSONDestination(root, t, s);
+
+                switch (TEXT_FORMAT) {
+                    case Info:
+                        tripGuide += origin.getTime() + " " + origin.getName() + " - " + destination.getTime() + " " + destination.getName() + "\n";
+                        break;
+                    case Speech:
+                        if (s == 0) {
+                            tripGuide += "I will tell you how to go from " + origin.getName() + " to " + destination.getName() + ". ";
+                            tripGuide += "Go to " + origin.getName() + ", " + origin.getTime() + " o'clock. ";
+                        } else {
+                            tripGuide += " Then get off the buss at " + origin.getName() + " and enter the buss at " + origin.getTime() + " o'clock. ";
+                        }
+                        break;
+                }
+
+                if (PASS_LIST) {
+                    JSONPassListHelper passListHelper = new JSONPassListHelper(root, t, s);
+                    if (passListHelper.hasPassList()) {
+                        int intermediateStops = passListHelper.getIntermediateStopCount();
+                        for (int i = 1; i < intermediateStops; i++) {
+                            switch (TEXT_FORMAT) {
+                                case Info:
+                                    tripGuide += "---" + passListHelper.getTime(i) + " " + passListHelper.getName(i) + "\n";
+                                    break;
+                                case Speech:
+                                    boolean onLastStop = s == stopCount - 1 && i == intermediateStops - 1;
+
+                                    if (i == 1)
+                                        tripGuide += "Then you have to go to " + passListHelper.getName(i) + " at " + passListHelper.getTime(i) + " o'clock. ";
+                                    else if (onLastStop)
+                                        tripGuide += "And finally you will enter " + passListHelper.getName(i) + ", at " + passListHelper.getTime(i) + " o'clock. ";
+                                    else
+                                        tripGuide += "And then you will enter " + passListHelper.getName(i) + ", " + passListHelper.getTime(i) + " o'clock. ";
+                                    break;
+                            }
+                        }
+                    }
+                }
             }
+            // Only get the first trip of the list
+            if (USE_DATE_TIME)
+                break;
+
             tripGuide += "\n";
         }
 
         return tripGuide;
     }
 
-    private void updateTripData(){
+    public JSONObject getRoot(String data) {
+        try {
+            return new JSONObject(data);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    private void updateTripData() {
         readData(getTripURL(originID, destID));
     }
 
@@ -150,6 +232,14 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
         return id;
     }
 
+    private String getDateTime() {
+        return new SimpleDateFormat("yyyy-MM-dd").format(Calendar.getInstance().getTime());
+    }
+
+    private String getTime() {
+        return new SimpleDateFormat("HH:mm").format(Calendar.getInstance().getTime());
+    }
+
     private LatLng getLocationFromAddress(String locationName) {
 
         try {
@@ -181,10 +271,20 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
 
     private URL getTripURL(String originID, String destID) {
         try {
-            return new URL("http://api.sl.se/api2/TravelplannerV3/trip.json?key=" + API_Keys.RESPLANERARE_KEY +
-                    "&originID=" + originID +
-                    "&destID=" + destID +
-                    "&searchForArrival=0");
+            if (USE_DATE_TIME)
+                return new URL("http://api.sl.se/api2/TravelplannerV3/trip.json?key=" + API_Keys.RESPLANERARE_KEY +
+                        "&originID=" + originID +
+                        "&destID=" + destID +
+                        "&searchForArrival=0" +
+                        "&passlist=" + (PASS_LIST == true ? 1 : 0) +
+                        "&date=" + getDateTime() +
+                        "&time=" + getTime());
+            else
+                return new URL("http://api.sl.se/api2/TravelplannerV3/trip.json?key=" + API_Keys.RESPLANERARE_KEY +
+                        "&originID=" + originID +
+                        "&destID=" + destID +
+                        "&searchForArrival=0" +
+                        "&passlist=" + (PASS_LIST == true ? 1 : 0));
         } catch (MalformedURLException e) {
             e.printStackTrace();
             return null;
