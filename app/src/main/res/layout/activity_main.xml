@@ -7,7 +7,7 @@
     android:orientation="vertical"
     tools:context="zelongames.yodatosl.MainActivity">
 
-    <LinearLayout
+    <!--<LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -38,6 +38,68 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="..." />
-    </ScrollView>
+    </ScrollView>-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <AutoCompleteTextView
+                android:id="@+id/fromStationTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/fromStation"
+                android:inputType="text"
+                android:lineSpacingExtra="24sp"
+                android:maxLines="1"
+                android:singleLine="true" />
+        </android.support.design.widget.TextInputLayout>
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <AutoCompleteTextView
+                android:id="@+id/toStationTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/toStation"
+                android:inputType="text"
+                android:lineSpacingExtra="24sp"
+                android:maxLines="1"
+                android:singleLine="true" />
+        </android.support.design.widget.TextInputLayout>
+
+        <Button
+            android:id="@+id/searchButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/searchRouteButton"/>
+        <Button
+            android:id="@+id/btnListenStart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Listen" />
+
+        <Button
+            android:id="@+id/btnListenStop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Stop" />
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:verticalScrollbarPosition="right">
+
+            <TextView
+                android:id="@+id/txtSLGuide"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="..." />
+        </ScrollView>
+    </LinearLayout>
 
 </LinearLayout>

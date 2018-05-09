@@ -6,12 +6,55 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    private static final String TAG = "MainActivity";
+    private static final String API_KEY = "USE_YOUR_OWN_KEY";
+    private static final String API_URL = "https://sv.wikipedia.org/w/api.php?";
+
+    private String action = "action=query&formatversion=2";
+    private String titles = "titles=Skanstull";
+    private String prop = "prop=revisions";
+    private String rvprop = "rvprop=content";
+    private String format = "format=json";
+    private String texts = "";
+
+    private AutoCompleteTextView fromStationTextView;
+    private AutoCompleteTextView toStationTextView;
+    private Button searchButton;
+
+    private String fromStation;
+    private String toStation;
+
+
+    public void setToStation(String toStation) {
+        this.toStation = toStation;
+    }
+
+    public void setFromStation(String fromStation) {
+        this.fromStation = fromStation;
+    }
+
+    public String getToStation() {
+        return toStation;
+    }
+
+    public String getFromStation() {
+        return fromStation;
+    }
+
+    public void setTexts(String texts) {
+        this.texts = texts;
+    }
+
+    public String getTexts() {
+        return texts;
+    }
 
     public static TextView txtSLGuide = null;
     public static Geocoder coder = null;
@@ -29,16 +72,18 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        fromStationTextView = findViewById(R.id.fromStationTextView);
+        toStationTextView = findViewById(R.id.toStationTextView);
+        searchButton = findViewById(R.id.searchButton);
+
+
 
         coder = new Geocoder(this);
         txtSLGuide = findViewById(R.id.txtSLGuide);
 
-        initializeTextToSpeech();
+        searchButton.setOnClickListener(this);
 
-        fetchData = new FetchData(FetchData.TextFormat.Speech, "Rimbo station", "Tekniska högskolan", true, true);
-        fetchData.execute();
 
-        initializeSpeechButtons();
     }
 
     private void initializeSpeechButtons() {
@@ -87,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        textToSpeech.speak(tripInfo, TextToSpeech.QUEUE_FLUSH, null, null);
+      //  textToSpeech.speak(tripInfo, TextToSpeech.QUEUE_FLUSH, null, null);
     }
 
     @Override
@@ -107,5 +152,23 @@ public class MainActivity extends AppCompatActivity {
         }
 
         super.onDestroy();
+    }
+
+    @Override
+    public void onClick(View view) {
+        int i = view.getId();
+        switch (i){
+            case R.id.searchButton :
+                initializeTextToSpeech();
+                setFromStation(fromStationTextView.getText().toString());
+                setToStation(toStationTextView.getText().toString());
+                Log.d(TAG, "onClick: "+getFromStation());
+                Log.d(TAG, "onClick: "+getToStation());
+                fetchData = new FetchData(FetchData.TextFormat.Speech, getFromStation() , getToStation(), true, true);
+                fetchData.execute();
+
+                initializeSpeechButtons();
+                break;
+        }
     }
 }
