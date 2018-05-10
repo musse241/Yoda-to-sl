@@ -42,6 +42,26 @@ public class JSONTripHelper {
         return null;
     }
 
+    public static JSONObject getMainDestination(JSONArray legArray){
+        try {
+            return legArray.getJSONObject(0).getJSONObject("Destination");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static JSONObject getMainOrigin(JSONArray legArray){
+        try {
+            return legArray.getJSONObject(0).getJSONObject("Origin");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     public static JSONObject getStop(JSONArray legArray, int stopNumber) {
         try {
             return legArray.getJSONObject(stopNumber);
