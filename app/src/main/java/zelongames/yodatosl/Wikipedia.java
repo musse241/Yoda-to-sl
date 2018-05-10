@@ -82,6 +82,13 @@ public class Wikipedia extends AppCompatActivity  implements View.OnClickListene
         private Exception exception;
 
         @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+
+            wikipediaText.setText("Laddar...");
+        }
+
+        @Override
         protected String doInBackground(Void... urls) {
             String searchText = destination.getToStation();
             String data="";
