@@ -25,9 +25,9 @@ public abstract class JSONObjectBase {
         this.STOP = null;
     }
 
-    public JSONObjectBase(JSONObject stop, String objectName) {
+    public JSONObjectBase(JSONArray tripArray, JSONObject stop, String objectName) {
         this.OBJECT_NAME = objectName;
-        this.TRIP_ARRAY = null;
+        this.TRIP_ARRAY = tripArray;
         this.STOP = stop;
 
         setTrip();
@@ -59,6 +59,16 @@ public abstract class JSONObjectBase {
         return null;
     }
 
+    public String getBussLine(){
+        try {
+            return getProduct().get("line").toString();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     public String getTime() {
         if (jsonObject == null)
             return null;
@@ -80,6 +90,16 @@ public abstract class JSONObjectBase {
         String time = minutes.equals("00") ? hours : hours + ":" + minutes;
 
         return time;
+    }
+
+    private JSONObject getProduct(){
+        try {
+            return STOP.getJSONObject("Product");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 
     public int getTripCount() {
