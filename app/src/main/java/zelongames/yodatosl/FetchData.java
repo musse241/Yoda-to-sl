@@ -51,7 +51,7 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
         return tripInfo;
     }
 
-    private StringBuilder data = null;
+    public StringBuilder data = null;
 
     public String getData() {
         return data.toString();

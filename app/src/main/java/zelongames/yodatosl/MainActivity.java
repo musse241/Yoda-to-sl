@@ -1,24 +1,33 @@
 package zelongames.yodatosl;
 
+import android.content.Intent;
 import android.location.Geocoder;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.TextView;
 
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+    private static final String TAG = "MainActivity";
+    Intent intent;
+    Destination destination;
 
+    private AutoCompleteTextView fromStationTV;
+    private AutoCompleteTextView toStationTV;
+    private Button searchTrip;
     public static TextView txtSLGuide = null;
     public static Geocoder coder = null;
 
     private FetchData fetchData = null;
     private Button btnListenStart = null;
     private Button btnListenStop = null;
+    private Button btnWiki;
     private TextToSpeech textToSpeech = null;
     String tripInfo;
 
@@ -33,13 +42,15 @@ public class MainActivity extends AppCompatActivity {
 
         coder = new Geocoder(this);
         txtSLGuide = findViewById(R.id.txtSLGuide);
+        fromStationTV = findViewById(R.id.fromStationTextView);
+        toStationTV = findViewById(R.id.toStationTextView);
+        searchTrip = findViewById(R.id.searchTrip);
+        btnWiki = findViewById(R.id.btnWikipedia);
 
-        initializeTextToSpeech();
+        searchTrip.setOnClickListener(this);
+        btnWiki.setOnClickListener(this);
 
-        fetchData = new FetchData(FetchData.TextFormat.Speech, "Rimbo station", "Tekniska högskolan", true, true);
-        fetchData.execute();
 
-        initializeSpeechButtons();
     }
 
     private void initializeSpeechButtons() {
@@ -99,5 +110,32 @@ public class MainActivity extends AppCompatActivity {
         TextToSpeechHelper.stopSpeech(textToSpeech);
 
         super.onDestroy();
+    }
+
+    @Override
+    public void onClick(View view) {
+        int i = view.getId();
+        switch (i){
+            case R.id.searchTrip :
+                String fromStation = fromStationTV.getText().toString();
+                String toStation = toStationTV.getText().toString();
+
+                 destination = new Destination();
+                destination.Destination(fromStation,toStation);
+
+                initializeTextToSpeech();
+
+
+                fetchData = new FetchData(FetchData.TextFormat.Speech, destination.getFromStation(), destination.getToStation(), true, true);
+                fetchData.execute();
+
+                initializeSpeechButtons();
+                break;
+            case R.id.btnWikipedia:
+                intent = new Intent(MainActivity.this, Wikipedia.class);
+                intent.putExtra("Destination",destination);
+                startActivity(intent);
+                break;
+        }
     }
 }

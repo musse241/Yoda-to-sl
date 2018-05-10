@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">YodaToSL</string>
+    <string name="fromStation">Från vilken station?</string>
+    <string name="toStation">Till vilken station?</string>
+    <string name="searchTrip">Sök resväg</string>
+    <string name="title_activity_trip_and_wiki">TripAndWiki</string>
+    <string name="tab_text_1">Tab 1</string>
+    <string name="tab_text_2">Tab 2</string>
+    <string name="tab_text_3">Tab 3</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="Wikipedia">Look into Wikipedia</string>
+    <string name="goBack">Go Back</string>
 </resources>
