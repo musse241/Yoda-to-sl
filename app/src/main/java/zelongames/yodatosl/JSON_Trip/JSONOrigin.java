@@ -13,7 +13,7 @@ public class JSONOrigin extends JSONObjectBase {
     public JSONOrigin(JSONArray tripArray) {
         super(tripArray, "Origin");
     }
-    public JSONOrigin(JSONObject stop) {
-        super(stop, "Origin");
+    public JSONOrigin(JSONArray tripArray, JSONObject stop) {
+        super(tripArray, stop, "Origin");
     }
 }
