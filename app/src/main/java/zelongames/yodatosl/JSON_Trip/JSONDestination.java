@@ -13,8 +13,8 @@ public class JSONDestination extends JSONObjectBase {
         super(tripArray, "Destination");
     }
 
-    public JSONDestination(JSONObject stop) {
-        super(stop, "Destination");
+    public JSONDestination(JSONArray tripArray, JSONObject stop) {
+        super(tripArray, stop, "Destination");
 
 
     }
