@@ -90,7 +90,8 @@ public class Wikipedia extends AppCompatActivity  implements View.OnClickListene
 
         @Override
         protected String doInBackground(Void... urls) {
-            String searchText = destination.getToStation();
+
+            String searchText = correctInput(destination.getToStation());
             String data="";
             try{
                 Log.d(TAG, "doInBackground: Before");
@@ -118,6 +119,18 @@ public class Wikipedia extends AppCompatActivity  implements View.OnClickListene
                 Toast.makeText(Wikipedia.this,"Fetch status: ERROR", Toast.LENGTH_SHORT).show();
                 return null;
             }
+        }
+
+        private String correctInput(String toStation) {
+            String newText = "";
+            for (int i = 0; i < toStation.length(); i++) {
+
+                if (toStation.charAt(i)==' ')
+                    newText += "_";
+                else
+                    newText += toStation.charAt(i);
+            }
+            return newText;
         }
 
         protected void onPostExecute(String response){
