@@ -14,7 +14,7 @@ public class JSONPassListManager extends JSONObjectBase {
     private JSONArray passList = null;
 
     public JSONPassListManager(JSONObject stop) {
-        super(stop, null);
+        super(null, stop, null);
 
         try {
             passList = STOP.getJSONObject("Stops").getJSONArray("Stop");
