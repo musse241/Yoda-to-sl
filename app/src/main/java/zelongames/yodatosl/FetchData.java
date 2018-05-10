@@ -17,6 +17,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
@@ -34,6 +35,12 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
     public enum TextFormat {
         Info,
         Speech,
+    }
+
+    private boolean isTaskFinished = false;
+
+    public boolean getIsTaskFinished(){
+        return isTaskFinished;
     }
 
     private final boolean PASS_LIST;
@@ -70,17 +77,35 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
         LatLng originLocation = getLocationFromAddress(originName);
         LatLng destinationLocation = getLocationFromAddress(destinationName);
 
-        originID = getNearbyStationsID(originLocation, originName);
-        destID = getNearbyStationsID(destinationLocation, destinationName);
+        ArrayList<String> originInfo = getNearbyStationsInfo(originLocation, originName);
+        ArrayList<String> destInfo = getNearbyStationsInfo(destinationLocation, destinationName);
 
-        updateTripData();
+        originID = originInfo.get(0);
+        destID = destInfo.get(0);
+
+        // Update to the exact station name
+        originName = originInfo.get(1);
+        destinationName = destInfo.get(1);
+
+        if (originID != null || destID != null)
+            updateTripData();
+
+        isTaskFinished = true;
 
         return null;
     }
 
     @Override
+    protected void onPreExecute() {
+        super.onPreExecute();
+        isTaskFinished = false;
+        MainActivity.txtSLGuide.setText("Laddar...");
+    }
+
+    @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
+        isTaskFinished = true;
 
         if (originName != null && destinationName != null) {
 
@@ -109,8 +134,8 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
             for (int s = 0; s < stopCount; s++) {
                 JSONObject stop = JSONTripHelper.getStop(legArray, s);
 
-                JSONOrigin origin = new JSONOrigin(stop);
-                JSONDestination destination = new JSONDestination(stop);
+                JSONOrigin origin = new JSONOrigin(tripArray, stop);
+                JSONDestination destination = new JSONDestination(tripArray, stop);
 
                 switch (TEXT_FORMAT) {
                     case Info:
@@ -118,11 +143,10 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
                         break;
                     case Speech:
                         if (s == 0) {
-                            tripGuide += "I will tell you how to go from " + origin.getName() + " to " + destination.getName() + ". ";
-                            tripGuide += "Go to " + origin.getName() + ", " + origin.getTime() + " o'clock. ";
-                        } else {
-                            tripGuide += " Then get off the buss at " + origin.getName() + " and enter the buss at " + origin.getTime() + " o'clock. ";
-                        }
+                            tripGuide += "I will tell you how to go from " + originName + " to " + destinationName + ". ";
+                            tripGuide += "Go to " + origin.getName() + " and take the buss " + origin.getBussLine() + ", " + origin.getTime() + " o'clock. ";
+                        } else
+                            tripGuide += " Then get off the buss at " + origin.getName() + " and enter the buss " + origin.getBussLine() + " at " + origin.getTime() + " o'clock. ";
                         break;
                 }
 
@@ -183,18 +207,18 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
         }
     }
 
-    private String getNearbyStationsID(LatLng location, String locationName) {
+    private ArrayList<String> getNearbyStationsInfo(LatLng location, String locationName) {
         readData(getNearbyStationsURL(location));
 
         String data = getData();
-        if (!data.isEmpty())
-            return getStopID(data, locationName);
-
+        if (!data.isEmpty()) {
+            return getStopInfo(data, locationName);
+        }
         return null;
     }
 
-    private String getStopID(String data, String locationName) {
-        String id = "";
+    private ArrayList<String> getStopInfo(String data, String locationName) {
+        ArrayList<String> results = new ArrayList<>();
 
         try {
             JSONObject root = new JSONObject(data);
@@ -204,17 +228,19 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
             for (int i = 0; i < stopLocations.length(); i++) {
                 JSONObject object = root.getJSONObject("LocationList").getJSONArray("StopLocation").getJSONObject(i);
                 String name = object.get("name").toString();
-                id = object.get("id").toString();
 
                 // Found it!
-                if (name.contains(locationName))
+                if (name.toLowerCase().contains(locationName.toLowerCase())) {
+                    results.add(object.get("id").toString());
+                    results.add(object.get("name").toString());
                     break;
+                }
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        return id;
+        return results;
     }
 
     private String getDateTime() {
