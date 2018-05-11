@@ -45,7 +45,6 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
 
     private final boolean PASS_LIST;
     private final boolean USE_DATE_TIME;
-    private final TextFormat TEXT_FORMAT;
 
     private String originName = null;
     private String originID = null;
@@ -64,8 +63,7 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
         return data.toString();
     }
 
-    public FetchData(TextFormat textFormat, String originName, String destinationName, boolean passlist, boolean useDateTime) {
-        this.TEXT_FORMAT = textFormat;
+    public FetchData(String originName, String destinationName, boolean passlist, boolean useDateTime) {
         this.originName = originName;
         this.destinationName = destinationName;
         this.PASS_LIST = passlist;
@@ -123,12 +121,12 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
 
         if (originName != null && destinationName != null) {
 
-            tripInfo = getTripInfo(1);
-            MainActivity.txtSLGuide.setText(tripInfo);
+            tripInfo = getTripInfo(TextFormat.Speech);
+            MainActivity.txtSLGuide.setText(getTripInfo(TextFormat.Info));
         }
     }
 
-    private String getTripInfo(Integer tripNumber) {
+    private String getTripInfo(TextFormat textFormat) {
         String tripGuide = "";
 
         // Only convert data to string once
@@ -151,7 +149,7 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
                 JSONOrigin origin = new JSONOrigin(tripArray, stop);
                 JSONDestination destination = new JSONDestination(tripArray, stop);
 
-                switch (TEXT_FORMAT) {
+                switch (textFormat) {
                     case Info:
                         tripGuide += origin.getTime() + " " + origin.getName() + " - " + destination.getTime() + " " + destination.getName() + "\n";
                         break;
@@ -169,7 +167,7 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
                     if (passListManager.hasPassList()) {
                         int intermediateStops = passListManager.getIntermediateStopCount();
                         for (int i = 1; i < intermediateStops; i++) {
-                            switch (TEXT_FORMAT) {
+                            switch (textFormat) {
                                 case Info:
                                     tripGuide += "- " + passListManager.getTime(i) + " " + passListManager.getName(i) + "\n";
                                     break;

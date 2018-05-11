@@ -60,6 +60,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnListenStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (fetchData == null || !fetchData.getIsTaskFinished())
+                    return;
+
                 tripInfo = fetchData.getTripInfo();
 
                 if (!tripInfo.isEmpty())
@@ -126,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 initializeTextToSpeech();
 
 
-                fetchData = new FetchData(FetchData.TextFormat.Speech, destination.getFromStation(), destination.getToStation(), true, true);
+                fetchData = new FetchData(destination.getFromStation(), destination.getToStation(), true, true);
                 fetchData.execute();
 
                 initializeSpeechButtons();
