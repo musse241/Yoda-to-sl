@@ -2,7 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://D:\Android Studio\Yoda-to-sl\Android Studio-Yoda-to-sl.iml" filepath="D:\Android Studio\Yoda-to-sl\Android Studio-Yoda-to-sl.iml" />
       <module fileurl="file://$PROJECT_DIR$/Yoda-to-sl.iml" filepath="$PROJECT_DIR$/Yoda-to-sl.iml" />
+      <module fileurl="file://D:\Android Studio\Yoda-to-sl\app\Yoda-to-sl-app.iml" filepath="D:\Android Studio\Yoda-to-sl\app\Yoda-to-sl-app.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

@@ -39,7 +39,7 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
 
     private boolean isTaskFinished = false;
 
-    public boolean getIsTaskFinished(){
+    public boolean getIsTaskFinished() {
         return isTaskFinished;
     }
 
@@ -77,11 +77,18 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
         LatLng originLocation = getLocationFromAddress(originName);
         LatLng destinationLocation = getLocationFromAddress(destinationName);
 
-        ArrayList<String> originInfo = getNearbyStationsInfo(originLocation, originName);
-        ArrayList<String> destInfo = getNearbyStationsInfo(destinationLocation, destinationName);
+        ArrayList<String> originInfo ;
+        ArrayList<String> destInfo;
 
-        originID = originInfo.get(0);
-        destID = destInfo.get(0);
+        try {
+            originInfo = getNearbyStationsInfo(originLocation, originName);
+            destInfo = getNearbyStationsInfo(destinationLocation, destinationName);
+            originID = originInfo.get(0);
+            destID = destInfo.get(0);
+        } catch (Exception e) {
+            originID = destID = null;
+            return null;
+        }
 
         // Update to the exact station name
         originName = originInfo.get(1);
@@ -105,6 +112,13 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
+
+        if (hasFailed()) {
+            MainActivity.txtSLGuide.setText("Error");
+            isTaskFinished = true;
+            return;
+        }
+
         isTaskFinished = true;
 
         if (originName != null && destinationName != null) {
@@ -186,6 +200,9 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
     }
 
     private void readData(URL url) {
+        if (url == null)
+            return;
+
         data = new StringBuilder();
 
         try {
@@ -208,7 +225,11 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
     }
 
     private ArrayList<String> getNearbyStationsInfo(LatLng location, String locationName) {
-        readData(getNearbyStationsURL(location));
+        URL url = getNearbyStationsURL(location);
+        if (url == null)
+            return null;
+
+        readData(url);
 
         String data = getData();
         if (!data.isEmpty()) {
@@ -270,6 +291,9 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
     }
 
     private URL getNearbyStationsURL(LatLng location) {
+        if (location == null)
+            return null;
+
         try {
             return new URL("http://api.sl.se/api2/nearbystops.json?key=" + API_Keys.NEARBY_STOPS_KEY +
                     "&originCoordLat=" + location.latitude +
@@ -300,5 +324,9 @@ public class FetchData extends AsyncTask<Void, Void, Void> {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private boolean hasFailed() {
+        return originID == null || destID == null;
     }
 }

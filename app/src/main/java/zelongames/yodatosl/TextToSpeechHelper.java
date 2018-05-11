@@ -15,6 +15,9 @@ public class TextToSpeechHelper {
     }
 
     public static void speak(TextToSpeech textToSpeech, String text) {
+        if (textToSpeech == null)
+            return;
+
         textToSpeech.setPitch(1f);
         textToSpeech.setSpeechRate(1f);
         textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
