@@ -58,6 +58,7 @@ public class Wikipedia extends AppCompatActivity  implements View.OnClickListene
         Log.d(TAG, "onCreate: "+destination.getToStation());
 
 
+
         new RetrieveFeedTask().execute();
 
         goBackBtn.setOnClickListener(this);
