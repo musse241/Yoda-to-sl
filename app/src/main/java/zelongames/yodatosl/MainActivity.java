@@ -123,10 +123,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String fromStation = fromStationTV.getText().toString();
                 String toStation = toStationTV.getText().toString();
 
-                 destination = new Destination();
+                Intent memeIntent =new Intent(MainActivity.this,MemeGenerator.class);
+                memeIntent.putExtra("ActivityKey",1);
+                startActivity(memeIntent);
+
+                destination = new Destination();
                 destination.Destination(fromStation,toStation);
 
                 initializeTextToSpeech();
+
 
 
                 fetchData = new FetchData(destination.getFromStation(), destination.getToStation(), true, true);
@@ -135,9 +140,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 initializeSpeechButtons();
                 break;
             case R.id.btnWikipedia:
+
+                memeIntent=new Intent(MainActivity.this,MemeGenerator.class);
+                startActivity(memeIntent);
+
+
                 intent = new Intent(MainActivity.this, Wikipedia.class);
                 intent.putExtra("Destination",destination);
                 startActivity(intent);
+
+
+
+
+
                 break;
         }
     }
